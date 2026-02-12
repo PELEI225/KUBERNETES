@@ -1,0 +1,45 @@
+1️⃣ ReplicaSet
+🔹 Rôle principal
+
+Maintenir un nombre fixe de Pods identiques
+
+Auto-réparation : si un Pod meurt, un nouveau est créé
+
+Utilise des labels pour savoir quels Pods gérer
+
+🔹 Limitation
+
+Ne gère pas les mises à jour : si tu veux changer l’image ou la version d’un Pod, il ne mettra pas les anciens Pods à jour automatiquement
+
+2️⃣ Deployment
+🔹 Rôle principal
+
+Gère les ReplicaSets
+
+Crée et maintient les Pods via le ReplicaSet
+
+Mises à jour progressives (rolling update)
+
+Rollback si une nouvelle version plante
+
+Permet scaling facilement (modifier le nombre de Pods)
+
+🔹 Avantages par rapport au ReplicaSet
+
+Automatise les mises à jour et la gestion des versions
+
+Plus flexible et sécurisé pour la production
+
+🔗 Schéma simple
+Deployment
+ └─ ReplicaSet
+      ├─ Pod 1
+      ├─ Pod 2
+      └─ Pod 3
+
+
+Deployment = chef d’orchestre
+
+ReplicaSet = veille à ce que le nombre de Pods reste correct
+
+Pod = exécute l’application (conteneur)
