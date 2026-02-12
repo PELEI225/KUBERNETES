@@ -1,0 +1,119 @@
+1️⃣ Pod
+🔹 C’est quoi ?
+
+La plus petite unité déployable dans Kubernetes
+
+Contient un ou plusieurs containers
+
+Partage :
+
+réseau (IP)
+
+stockage (volumes)
+
+namespace
+
+🔹 Exemple
+
+Un Pod avec un conteneur Nginx :
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+
+🔹 À retenir
+
+Kubernetes gère les Pods via d’autres ressources, pas directement
+
+Les Pods sont éphémères : si un Pod meurt, il ne se recrée pas automatiquement
+
+2️⃣ ReplicaSet
+🔹 C’est quoi ?
+
+Une ressource Kubernetes qui garantit que un nombre défini de Pods identiques est toujours en cours d’exécution
+
+Exemple : si tu veux 3 Pods Nginx, ReplicaSet s’assure qu’il y en ait toujours 3
+
+🔹 Exemple
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+
+🔹 À retenir
+
+Ne gère pas les mises à jour
+
+Si tu veux changer l’image, tu dois recréer le ReplicaSet
+
+Kubernetes s’occupe uniquement du nombre de Pods
+
+3️⃣ Deployment
+🔹 C’est quoi ?
+
+Une ressource supérieure qui gère ReplicaSets
+
+Sert à :
+
+créer Pods
+
+maintenir un nombre stable de Pods (via ReplicaSet)
+
+gérer mise à jour / rollback
+
+scaling automatique
+
+🔹 Exemple
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.23
+
+
+➡ Kubernetes crée un ReplicaSet derrière le Deployment, qui lui-même gère les Pods
+
+🔹 À retenir
+
+Deployment → ReplicaSet → Pods
+
+Permet rolling update (mise à jour progressive)
+
+Permet rollback si quelque chose casse
+
+🔗 Schéma simplifié
+Deployment
+ └─ ReplicaSet
+      ├─ Pod 1
+      ├─ Pod 2
+      └─ Pod 3
