@@ -1,0 +1,144 @@
+📌 Kubernetes Services – Récapitulatif Complet
+🔹 1. Qu’est-ce qu’un Service Kubernetes ?
+
+Un Service Kubernetes est une abstraction réseau qui expose un groupe de Pods comme un point d’accès unique et stable.
+
+👉 Les Pods sont éphémères (leurs IP changent), mais le Service fournit :
+
+une IP stable
+
+un nom DNS stable
+
+un load balancing automatique
+
+🔹 2. Problème que résout un Service
+❌ Sans Service :
+
+Chaque Pod a une IP différente
+
+Quand un Pod est recréé → nouvelle IP
+
+Les clients doivent connaître toutes les IP
+
+✅ Avec Service :
+
+Les clients utilisent le nom du Service
+
+Kubernetes gère automatiquement les Pods derrière
+
+🔹 3. Labels (Étiquettes)
+
+Les labels sont des paires clé/valeur attachées aux objets Kubernetes (Pods, Services, Deployments…).
+
+Exemple :
+labels:
+  app: backend
+  env: prod
+
+
+👉 Les labels servent à :
+
+organiser les ressources
+
+identifier des groupes de Pods
+
+permettre aux Services de cibler les bons Pods
+
+🔹 4. Selectors (Sélecteurs)
+
+Un selector permet à un Service de sélectionner automatiquement les Pods qui lui sont associés.
+
+Exemple :
+selector:
+  app: backend
+
+
+👉 Le Service va :
+
+chercher tous les Pods ayant app=backend
+
+les ajouter comme endpoints
+
+mettre à jour la liste automatiquement (auto-healing)
+
+🔹 5. Le Service contient-il des Pods ?
+
+❌ Non, un Service ne contient pas de Pods
+✔ Il pointe vers des Pods via labels + selectors
+
+Service
+  └── Selector: app=backend
+        ├── Pod 1 (app=backend)
+        ├── Pod 2 (app=backend)
+        └── Pod 3 (app=backend)
+
+🔹 6. Service Discovery (Découverte de services)
+
+La Service Discovery permet aux Pods de trouver d’autres services sans connaître leurs IP.
+
+Comment ?
+
+Kubernetes utilise CoreDNS
+
+Chaque Service reçoit un nom DNS stable
+
+service-name.namespace.svc.cluster.local
+
+
+👉 Les Pods communiquent via le nom du Service, pas via les IP des Pods.
+
+🔹 7. Load Balancing
+
+Tous les Services Kubernetes offrent du load balancing :
+
+Le trafic est réparti entre tous les Pods sélectionnés
+
+Si un Pod tombe → retiré automatiquement
+
+Si un Pod est recréé → ajouté automatiquement
+
+👉 Le load balancing est interne et automatique
+
+🔹 8. Types de Services Kubernetes
+1️⃣ ClusterIP (par défaut)
+
+Accessible uniquement à l’intérieur du cluster
+
+Utilisé pour la communication interne entre services
+
+2️⃣ NodePort
+
+Expose le Service via un port sur chaque Node
+
+Accès externe via :
+
+http://IP-du-node:NodePort
+
+3️⃣ LoadBalancer
+
+Fournit une IP publique
+
+Utilisé principalement en environnement cloud
+
+🔹 9. Exposer une application vers l’extérieur
+Type	Accès
+ClusterIP	Interne uniquement
+NodePort	Externe via Node
+LoadBalancer	Externe via IP publique
+🔹 10. Cluster, Master et Node (Rappel)
+
+Cluster Kubernetes : ensemble de machines (Nodes)
+
+Master (Control Plane) : cerveau du cluster
+
+Node (Worker) : exécute les Pods
+
+kubectl : outil client pour interagir avec le cluster
+
+Minikube : cluster Kubernetes local (master + node)
+
+🔹 11. Les 3 fonctionnalités clés d’un Service Kubernetes
+
+✔ Service Discovery
+✔ Load Balancing
+✔ Expose to World
