@@ -1,0 +1,116 @@
+1️⃣ Qu’est-ce que le RBAC ? (Why, What, Where, How)
+
+RBAC est un mécanisme de contrôle d’accès basé sur les rôles dans Kubernetes. Il permet de définir qui peut faire quoi sur quelles ressources.
+
+Why (Pourquoi) : Sécuriser un cluster Kubernetes en donnant le minimum de permissions nécessaires à chaque entité (principe du moindre privilège).
+
+What (Quoi) : Des objets Kubernetes qui décrivent les rôles et liaisons.
+
+Where (Où) : Dans le cluster Kubernetes, via l’API server. Les règles peuvent être namespace-scoped ou cluster-wide.
+
+How (Comment) : On crée des Roles/ClusterRoles et on les attache à des Users/ServiceAccounts/Groups via des RoleBindings/ClusterRoleBindings.
+
+2️⃣ Différence entre Users et ServiceAccounts
+Type	Description	Usage typique
+User	Identité externe (ex: développeur, administrateur)	Connexion via kubeconfig, OIDC, IAM
+ServiceAccount	Identité interne au cluster pour des pods/applications	Pods qui doivent accéder à l’API Kubernetes (ex: déploiement CI/CD, controllers)
+
+Note : On ne crée pas de User via Kubernetes, il vient d’un provider externe. Par contre, ServiceAccount est un objet Kubernetes.
+
+3️⃣ Les rôles : Role et ClusterRole
+
+Role : permissions limitée à un namespace.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: dev
+  name: pod-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+ClusterRole : permissions à l’échelle du cluster ou réutilisable dans plusieurs namespaces.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-admin
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
+
+💡 Astuce : un ClusterRole peut être attaché à un namespace spécifique via un RoleBinding.
+
+4️⃣ Les liaisons : RoleBinding et ClusterRoleBinding
+
+Ces objets attachent un rôle à un utilisateur, un groupe ou un service account.
+
+RoleBinding : lie un Role ou ClusterRole à un sujet dans un namespace précis.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: dev
+subjects:
+  - kind: User
+    name: alice
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+
+ClusterRoleBinding : lie un ClusterRole à un sujet cluster-wide.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-binding
+subjects:
+  - kind: User
+    name: bob
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+5️⃣ Gestion des permissions par namespace ou cluster-wide
+
+Namespace-scoped : via Role + RoleBinding
+
+Limite l’accès aux ressources d’un namespace spécifique.
+
+Cluster-wide : via ClusterRole + ClusterRoleBinding
+
+Donne accès à toutes les ressources du cluster, ou à certaines ressources globales (ex: nodes, storage classes).
+
+⚠️ Pratique recommandée : privilégier Role + RoleBinding pour limiter la surface d’attaque.
+
+6️⃣ Comment lier les utilisateurs aux rôles (OIDC, IAM, etc.)
+
+Kubernetes ne gère pas directement les comptes utilisateurs. Il s’appuie sur des providers externes :
+
+Provider	Comment ça marche
+OIDC	Les tokens JWT d’un identity provider (ex: Keycloak, Azure AD, Google) sont vérifiés par l’API server.
+IAM (AWS)	Avec aws-iam-authenticator, on mappe des rôles IAM aux users Kubernetes via ConfigMap aws-auth.
+kubeconfig static	On définit un utilisateur dans le kubeconfig avec certs ou tokens.
+
+Ensuite, on attache ces utilisateurs à des RoleBinding ou ClusterRoleBinding.
+
+✅ En résumé :
+
+RBAC = contrôle d’accès basé sur les rôles.
+
+User = externe, ServiceAccount = interne au cluster.
+
+Role = namespace, ClusterRole = cluster.
+
+RoleBinding = namespace, ClusterRoleBinding = cluster.
+
+Permissions peuvent être limitées ou cluster-wide.
+
+Liaison des utilisateurs se fait via des providers externes (OIDC, IAM, kubeconfig).
